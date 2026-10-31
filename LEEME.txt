@@ -1,0 +1,8 @@
+CIRCULAR BUSINESS CHALLENGE UJA - PORTALES SEPARADOS
+
+Sube index.html, profesor.html y videos.json a la raíz del repositorio circular-business-uja-2.
+
+ALUMNOS: https://pericoff.github.io/circular-business-uja-2/
+PROFESOR: https://pericoff.github.io/circular-business-uja-2/profesor.html
+
+IMPORTANTE: este método solo oculta el panel de profesor de la navegación del estudiante; no lo protege con contraseña. Las páginas comparten almacenamiento local SOLO dentro del mismo navegador y dispositivo. No es multiusuario real. Para control docente seguro y sincronización entre equipos hace falta autenticación y un servidor/base de datos.
