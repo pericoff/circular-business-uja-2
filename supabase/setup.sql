@@ -77,7 +77,10 @@ begin
    case when (x->>'id')::int=my_id
       then x
       else (x-'code'-'decision'-'idea'-'last'-'history'-'canvasGrade') ||
-           jsonb_build_object('code','','decision',null,'history','[]'::jsonb,'last',null)
+           jsonb_build_object('code','','decision',null,'history','[]'::jsonb,'last',null,
+             'canvasGrade', case when x->'canvasGrade'->'scores' is not null
+                  then jsonb_build_object('scores',x->'canvasGrade'->'scores')
+                  else null end)
    end order by (x->>'id')::int
  ) into filtered from jsonb_array_elements(g.state->'teams') x;
  return jsonb_build_object('version',g.version,'state',
