@@ -96,12 +96,11 @@ begin
  select * into g from public.cbc_game where id=1;
  if (g.state->>'round')::int <> p_round or g.state->>'phase'<>'decisions'
    then raise exception 'La ronda ya no admite entregas'; end if;
- for n in 0..3 loop
-   t:=g.state->'teams'->n;
-   if t->>'code'=upper(trim(coalesce(p_code,''))) then exit; end if;
- end loop;
- if t->>'code'<>upper(trim(coalesce(p_code,'')))
-   then raise exception 'Código no válido'; end if;
+ select (x.ordinality-1)::integer, x.team into n,t
+ from jsonb_array_elements(g.state->'teams') with ordinality as x(team,ordinality)
+ where upper(x.team->>'code')=upper(trim(coalesce(p_code,'')))
+ limit 1;
+ if n is null then raise exception 'Código no válido'; end if;
  if coalesce((t->>'active')::boolean,true)=false then raise exception 'Equipo inactivo'; end if;
  if (t->>'submitted')::boolean then raise exception 'Este equipo ya entregó'; end if;
  foreach k in array array['price','production','capacityInv','rdInv','ecoInv','marketingInv','recycled']
@@ -129,7 +128,7 @@ end $$;
 create or replace function public.cbc_save_idea(p_code text,p_idea jsonb)
 returns jsonb language plpgsql security definer set search_path = ''
 as $$
-declare g public.cbc_game%rowtype; n int; t jsonb; matched boolean:=false;
+declare g public.cbc_game%rowtype; n int; t jsonb;
 begin
  if jsonb_typeof(p_idea)<>'object' or length(p_idea::text)>40000
  then raise exception 'Propuesta no válida'; end if;
@@ -137,12 +136,12 @@ begin
  select * into g from public.cbc_game where id=1;
  if (g.state->>'round')::int<>1 or g.state->>'phase'<>'decisions'
    then raise exception 'El Canvas está cerrado'; end if;
- for n in 0..3 loop
-   t:=g.state->'teams'->n;
-   if t->>'code'=upper(trim(coalesce(p_code,''))) and
-      coalesce((t->>'active')::boolean,true) then matched:=true;exit; end if;
- end loop;
- if not matched then raise exception 'Código de equipo no válido'; end if;
+ select (x.ordinality-1)::integer, x.team into n,t
+ from jsonb_array_elements(g.state->'teams') with ordinality as x(team,ordinality)
+ where upper(x.team->>'code')=upper(trim(coalesce(p_code,'')))
+   and coalesce((x.team->>'active')::boolean,true)
+ limit 1;
+ if n is null then raise exception 'Código de equipo no válido'; end if;
  g.state:=jsonb_set(g.state,array['teams',n::text],t||jsonb_build_object('idea',p_idea));
  update public.cbc_game set state=g.state,version=version+1,updated_at=now() where id=1;
  return jsonb_build_object('ok',true);
