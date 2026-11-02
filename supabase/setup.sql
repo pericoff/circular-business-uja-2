@@ -5,7 +5,7 @@
 create table if not exists public.cbc_teachers (
   email text primary key
 );
-insert into public.cbc_teachers(email) values (lower('profesor@TU-DOMINIO.es'))
+insert into public.cbc_teachers(email) values (lower('pnunez@ujaen.es'))
 on conflict do nothing;
 
 create table if not exists public.cbc_game (
