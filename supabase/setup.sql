@@ -21,11 +21,11 @@ revoke all on public.cbc_game from anon, authenticated;
 
 create or replace function public.cbc_is_teacher()
 returns boolean language sql stable security definer set search_path = ''
-as $
+as $$
  select auth.role() = 'authenticated'
    and lower(coalesce((auth.jwt() ->> 'email'), '')) in
        (select t.email from public.cbc_teachers as t);
-$;
+$$;
 
 create or replace function public.cbc_new_state()
 returns jsonb language sql volatile security definer set search_path = ''
