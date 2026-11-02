@@ -76,7 +76,7 @@ begin
  select jsonb_agg(
    case when (x->>'id')::int=my_id
       then x
-      else (x-'code'-'decision'-'idea'-'last'-'history') ||
+      else (x-'code'-'decision'-'idea'-'last'-'history'-'canvasGrade') ||
            jsonb_build_object('code','','decision',null,'history','[]'::jsonb,'last',null)
    end order by (x->>'id')::int
  ) into filtered from jsonb_array_elements(g.state->'teams') x;
