@@ -14,11 +14,15 @@ textarea{width:100%;min-height:110px;resize:vertical;border:1px solid #bdcfc4;bo
 function defaults(){return {round:1,phase:'decisions',event:'normal',teams:names.map((name,i)=>({id:i+1,name,code:'UJA'+(i+1)+'26',cash:250000,capacity:12500,quality:50,eco:50,market:50,tech:50,last:null,history:[],decision:null,submitted:false})),log:[],results:[]}}let db=defaults(),version=0,remoteReady=false,remoteError='',teamCode='',teacherAuthenticated=false;
 let localVideoUrls=[];try{localVideoUrls=JSON.parse(localStorage.getItem('cbc_video_overrides')||'[]')}catch{localVideoUrls=[]}
 async function remoteRefresh(silent=false){
- const was=JSON.stringify([version,db.round,db.phase,db.event,db.teams[selected-1]?.submitted]);
+ const previous={version,round:db.round,phase:db.phase,event:db.event,submitted:db.teams[selected-1]?.submitted};
  const data=role==='prof'&&teacherAuthenticated?await CBCSync.rpc('cbc_teacher_state'):auth&&teamCode?await CBCSync.rpc('cbc_student_state',{p_code:teamCode}):null;
- if(!data)return; db=data.state;version=Number(data.version);
- const now=JSON.stringify([version,db.round,db.phase,db.event,db.teams[selected-1]?.submitted]);
- if(!silent||(was!==now&&(role==='prof'||db.round!==JSON.parse(was)[1]||db.phase!==JSON.parse(was)[2]||db.teams[selected-1]?.submitted!==JSON.parse(was)[4])))render();
+ if(!data)return;
+ db=data.state;version=Number(data.version);
+ const changed=previous.round!==db.round||previous.phase!==db.phase||
+   previous.event!==db.event||previous.submitted!==db.teams[selected-1]?.submitted;
+ // El cambio de evento debe refrescar la pantalla del alumno. No redibujar
+ // ante entregas ajenas mientras escribe su propio formulario.
+ if(!silent||changed||(role==='prof'&&previous.version!==version))render();
 }
 async function teacherSave(){try{let r=await CBCSync.rpc('cbc_teacher_save',{p_state:db,p_version:version});version=Number(r.version);return true;}catch(e){alert('Cambio NO guardado: '+e.message);await remoteRefresh();return false;}}
 async function initRemote(){
