@@ -35,7 +35,7 @@ as $$
   'teams',(
    select jsonb_agg(jsonb_build_object(
     'id', n, 'name', (array['CircularBuild','EcoMaterial','ReBuild','GreenTech'])[n],
-    'code', upper(replace(gen_random_uuid()::text,'-','')),
+    'code', upper(substr(md5(gen_random_uuid()::text),1,8)),
     'active',true,'cash',250000,'capacity',12500,'quality',50,
     'eco',50,'market',50,'tech',50,'last',null,
     'history','[]'::jsonb,'decision',null,'submitted',false
