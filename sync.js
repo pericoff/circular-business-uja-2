@@ -18,7 +18,7 @@ const CBCSync = (() => {
  async function rpc(name, params={}, retried=false){
    const headers={'apikey':key,'Content-Type':'application/json'};
    if(currentToken())headers.Authorization='Bearer '+currentToken();
-   else headers.Authorization='Bearer '+key;
+   // Sin sesión, Supabase resuelve el rol anon mediante la cabecera apikey.
    let response;
    try{response=await fetch(base+'/rest/v1/rpc/'+name,{
       method:'POST',headers,body:JSON.stringify(params),cache:'no-store'
