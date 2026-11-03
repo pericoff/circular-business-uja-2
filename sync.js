@@ -40,6 +40,16 @@ const CBCSync = (() => {
    session=data;sessionStorage.setItem(store,JSON.stringify(session));
    return rpc('cbc_teacher_state');
  }
+ async function advisor(code,question){
+   if(!/^[a-z0-9]{6,12}$/i.test(String(code||'').trim()))throw Error('Código de equipo no válido.');
+   const response=await fetch(base+'/functions/v1/circular-advisor',{
+      method:'POST',headers:{'apikey':key,'Content-Type':'application/json'},
+      body:JSON.stringify({code:String(code).trim(),question:String(question||'').trim()})
+   }).catch(()=>{throw Error('No se pudo contactar con Supabase.');});
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok)throw Error(data.error||'Error del asesor IA ('+response.status+').');
+   return data;
+ }
  function logout(){session=null;sessionStorage.removeItem(store)}
- return {rpc,login,logout,currentToken};
+ return {rpc,login,logout,currentToken,advisor};
 })();
